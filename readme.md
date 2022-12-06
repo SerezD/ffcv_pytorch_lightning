@@ -41,9 +41,11 @@ Official FFCV [docs](https://docs.ffcv.io/writing_datasets.html).
 ## Dataloader and Datamodule
 
 Merge the PL Datamodule with the FFCV Loader object.  
-It should be compatible with ddp/multiprocessing.
-See `datamodule.py` for a complete example.
+It should be compatible with ddp/multiprocessing.  
+See `datamodule.py` for a complete example.  
+Official FFCV [docs](https://docs.ffcv.io/making_dataloaders.html).
 
 ## Launch Training
 
 See `main.py` for a dummy example.  
+Basically just a standard PL train script, everything has been set up in datamodule.  
