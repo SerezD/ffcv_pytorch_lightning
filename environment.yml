@@ -1,0 +1,21 @@
+name: ffcv-pl
+channels:
+  - pytorch
+  - conda-forge
+  - nvidia
+  - defaults
+dependencies:
+  - pytorch-cuda>=11.6
+  - torchaudio>=0.13.1
+  - pytorch>=1.13.1
+  - torchvision>=0.14.1
+  - cupy
+  - compilers
+  - numba
+  - opencv
+  - pkg-config
+  - libjpeg-turbo=2.1.4
+  - pip
+  - pip:
+    - ffcv
+    - pytorch-lightning>=1.9.0
