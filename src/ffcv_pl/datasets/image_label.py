@@ -1,4 +1,5 @@
 import torch
+from ffcv.fields.bytes import BytesDecoder
 from torch.utils.data import Dataset
 import pytorch_lightning as pl
 from glob import glob
@@ -9,17 +10,28 @@ from ffcv.loader import Loader, OrderOption
 from ffcv.transforms import ToTensor, ToTorchImage
 from ffcv.fields.decoders import CenterCropRGBImageDecoder
 
-from src.ffcv_pl_loader.ffcv_utils.custom_augmentations import DivideImage255
+from ffcv_pl.ffcv_utils.custom_augmentations import DivideImage255
 
 
-class ImageDataset(Dataset):
+class ImageLabelDataset(Dataset):
 
     def __init__(self, folder: str):
         """
+        create a dataset to return (image, label) pairs. Label name is taken according to specified folder.
+
+        E.G.
+        /home/dataset/imagenet/
+                                /dog/0001.png
+                                /dog/0002.png
+                                /cat/0001.png
+                                /cat/0002.png
+        if folder is /home/dataset/imagenet/ will get labels 'dog' 'dog' 'cat' 'cat'
+
         :param folder: path to images in [.png, .jpg, .jPEG] formats
         """
 
-        self.image_names = glob(folder + '*.png') + glob(folder + '*.jpg') + glob(folder + '*.JPEG')
+        self.image_names = glob(f'{folder}*.jpg', recursive=True) + glob(f'{folder}*.png', recursive=True) + \
+                           glob(f'{folder}*.JPEG', recursive=True)
 
     def __len__(self):
         return len(self.image_names)
@@ -30,14 +42,16 @@ class ImageDataset(Dataset):
         :return: the corresponding image and optionally class name
         """
 
-        # load image with no preprocessing.
-        # return type should be a Tuple
-        image = (np.array(Image.open(self.image_names[index]).convert('RGB')), )
+        # load image
+        image_tensor = np.array(Image.open(self.image_names[index]).convert('RGB'))
 
-        return image
+        # load class
+        label = self.image_names[index].split('/')[-2]
+
+        return image_tensor, label
 
 
-class ImageDataModule(pl.LightningDataModule):
+class ImageLabelDataModule(pl.LightningDataModule):
 
     def __init__(self, train_file: str, val_file: str, test_file: str, image_size: int, dtype: torch.dtype,
                  batch_size: int, num_workers: int, is_dist: bool, seed: int):
@@ -58,22 +72,26 @@ class ImageDataModule(pl.LightningDataModule):
         self.image_size = image_size
         self.batch_size = batch_size
         self.num_workers = num_workers
-
-        self.pipeline = None
+        self.seed = seed
+        self.is_dist = is_dist
         self.dtype = dtype
 
-        self.is_dist = is_dist
-        self.seed = seed
+        self.pipeline = None
 
     def setup(self, stage=None):
 
         # prepare data
-        image_pipeline = [CenterCropRGBImageDecoder((self.image_size, self.image_size), ratio=1.),
-                          ToTensor(), ToTorchImage(), DivideImage255(self.dtype)]
+        img_pipeline = [CenterCropRGBImageDecoder(output_size=(self.image_size, self.image_size), ratio=1.),
+                        ToTensor(),
+                        ToTorchImage(),
+                        DivideImage255(self.dtype),
+                        ]
 
-        # Pipeline for each data field
+        label_pipeline = [BytesDecoder()]
+
         self.pipeline = {
-            'image': image_pipeline,
+            'image': img_pipeline,
+            'class': label_pipeline
         }
 
     def train_dataloader(self):
