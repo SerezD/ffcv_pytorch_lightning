@@ -4,7 +4,7 @@ from pytorch_lightning.strategies.ddp import DDPStrategy
 from torch import nn
 from torch.optim import Adam
 
-from datamodule import ImageDataModule
+from src.datasets.datamodule import ImageDataModule
 
 
 # define the LightningModule
