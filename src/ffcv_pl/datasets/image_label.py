@@ -2,7 +2,7 @@ import torch
 from ffcv.fields.bytes import BytesDecoder
 from torch.utils.data import Dataset
 import pytorch_lightning as pl
-from glob import glob
+from pathlib import Path
 from PIL import Image
 import numpy as np
 
@@ -30,8 +30,9 @@ class ImageLabelDataset(Dataset):
         :param folder: path to images in [.png, .jpg, .jPEG] formats
         """
 
-        self.image_names = glob(f'{folder}*.jpg', recursive=True) + glob(f'{folder}*.png', recursive=True) + \
-                           glob(f'{folder}*.JPEG', recursive=True)
+        self.image_names = [x.name for x in Path(folder).rglob('*.JPEG')] + \
+                           [x.name for x in Path(folder).rglob('*.jpg')] + \
+                           [x.name for x in Path(folder).rglob('*.png')]
 
     def __len__(self):
         return len(self.image_names)
