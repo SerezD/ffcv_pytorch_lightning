@@ -7,7 +7,7 @@ long_description = (this_directory / "../readme.md").read_text()
 
 
 setup(name='ffcv_pl',
-      version='0.1.1',
+      version='0.1.2',
       description='manage fast data loading with ffcv and pytorch lightning',
       long_description=long_description,
       long_description_content_type='text/markdown',
