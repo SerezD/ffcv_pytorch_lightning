@@ -29,10 +29,9 @@ class ImageLabelDataset(Dataset):
 
         :param folder: path to images in [.png, .jpg, .jPEG] formats
         """
-
-        self.image_names = [x.name for x in Path(folder).rglob('*.JPEG')] + \
-                           [x.name for x in Path(folder).rglob('*.jpg')] + \
-                           [x.name for x in Path(folder).rglob('*.png')]
+        self.image_names = [str(p.resolve()) for p in Path(folder).rglob('*.JPEG')] + \
+                           [str(p.resolve()) for p in Path(folder).rglob('*.jpg')] + \
+                           [str(p.resolve()) for p in Path(folder).rglob('*.png')]
 
     def __len__(self):
         return len(self.image_names)
