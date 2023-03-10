@@ -22,7 +22,7 @@ def create_image_dataset(train_folder: str = None, validation_folder: str = None
             dataset = ImageDataset(f)
 
             # official guidelines: https://docs.ffcv.io/writing_datasets.html
-            print(f'creating dataset from folder: {f}\nto file: {path}')
+            print(f'creating dataset from folder: {f}\tto file: {path}')
             writer = DatasetWriter(path, {'image': RGBImageField(write_mode='jpg')})
             writer.from_indexed_dataset(dataset)
         else:
@@ -55,7 +55,7 @@ def create_image_label_dataset(train_folder: str = None, validation_folder: str 
             dataset = ImageLabelDataset(f)
 
             # official guidelines: https://docs.ffcv.io/writing_datasets.html
-            print(f'creating dataset from folder: {f}\nto file: {path}')
+            print(f'creating dataset from folder: {f}\tto file: {path}')
             writer = DatasetWriter(path, {'image': RGBImageField(write_mode='jpg'), 'label': JSONField()})
             writer.from_indexed_dataset(dataset)
         else:

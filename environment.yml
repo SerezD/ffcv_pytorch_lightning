@@ -14,8 +14,8 @@ dependencies:
   - numba
   - opencv
   - pkg-config
-  - libjpeg-turbo=2.1.4
+  - libjpeg-turbo>=2.1.4
   - pip
+  - pytorch-lightning>=1.9.0
   - pip:
-    - ffcv
-    - pytorch-lightning>=1.9.0
+    - ffcv>=1.0.0

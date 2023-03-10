@@ -11,10 +11,17 @@ are proposed.
 ### Dependencies
 
 There are actually some known issues about the installation of the FFCV package.   
-Check for instance issues of FFCV ([#133](https://github.com/libffcv/ffcv/issues/133) 
-[#54](https://github.com/libffcv/ffcv/issues/54)). 
+In particular, even a successful installation may rise the following error when 
+trying to import `ffcv` (this seems to happen also in version `1.0.x` of FFCV):
 
-The first suggestion to install dependencies is to use the provided `environment.yml` file:  
+```ImportError: libopencv_imgproc.so.405: cannot open shared object file: No such file or directory```
+
+There is a Closed issue about this [#136](https://github.com/libffcv/ffcv/issues/136).
+
+In order to correctly install everything, I suggest to use Conda 
+(I tried also pip but encountered the error above).
+
+First, try to install dependencies with `environment.yml` file:  
 ```
 conda env create --file environment.yml
 ```
@@ -36,16 +43,15 @@ you can try installing packages manually:
     conda install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia
     ```
 
-3. install ffcv dependencies 
+3. install ffcv dependencies and pytorch-lightning
     ```
     # can take a very long time, but should not create conflicts
-    conda install cupy pkg-config compilers libjpeg-turbo opencv numba -c pytorch -c conda-forge
+    conda install cupy pkg-config compilers libjpeg-turbo opencv numba pytorch-lightning -c pytorch -c conda-forge
     ```
 
-4. install ffcv and pytorch-lighting
+4. install ffcv
     ```
     pip install ffcv
-    pip install pytorch-lightning
     ```
 
 ### Package
@@ -64,19 +70,22 @@ This package allows different types of Datasets, listed in the `dataset` subpack
 A quick example on how to create a dataset is provided in the `dataset_creation.py script`:
 
 ```
-from ffcv_pl.ffcv_utils.generate_dataset import create_image_dataset
+from ffcv_pl.ffcv_utils.generate_dataset import create_image_label_dataset
 
 if __name__ == '__main__':
 
     # write dataset in ".beton" format
-    test_folder = '/media/dserez/datasets/imagenet/test/'
-    create_image_dataset(test_folder=test_folder) 
+    train_folder = '/media/dserez/datasets/cub/train/'
+    test_folder = '/media/dserez/datasets/cub/test/'
+    create_image_label_dataset(train_folder=train_folder, test_folder=test_folder)
 ```
 
-For example, this code will create the file `/media/dserez/datasets/imagenet/test.beton`, 
-loading images from folder `/media/dserez/datasets/imagenet/test/`.
+For example, this code will create the files `/media/dserez/datasets/cub/test.beton` and 
+`/media/dserez/datasets/cub/train.beton`, 
+loading images from folders `/media/dserez/datasets/cub/test/` and 
+`/media/dserez/datasets/cub/train/`, respectively.
 
-Note that you can pass also train/validation folders, all in one call. 
+Note that you can pass also more folders, all in one call. 
 
 ## Dataloader and Datamodule
 
@@ -129,7 +138,7 @@ if __name__ == '__main__':
 
     pl.seed_everything(SEED, workers=True)
 
-    dataset = 'cub2002011'
+    dataset = 'cub'
     image_size = 256
     batch_size = 16
     train_folder = f'/media/dserez/datasets/{dataset}/train.beton'
@@ -150,6 +159,7 @@ if __name__ == '__main__':
                                   num_workers=1, is_dist=gpus > 1, seed=SEED)
 
     trainer.fit(model, data_module)
+
 ```
 
 Each `ffcv_pl.datasets.*` contains a couple of classes (Dataset, Dataloader).

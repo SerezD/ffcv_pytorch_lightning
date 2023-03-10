@@ -1,10 +1,9 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 from pathlib import Path
 
-
+# set readme
 this_directory = Path(__file__).parent
 long_description = (this_directory / "../readme.md").read_text()
-
 
 setup(name='ffcv_pl',
       version='0.1.3',
@@ -14,5 +13,4 @@ setup(name='ffcv_pl',
       url='https://github.com/SerezD/ffcv_pytorch_lightning',
       author='DSerez',
       license='MIT',
-      packages=find_packages(),
       zip_safe=False)

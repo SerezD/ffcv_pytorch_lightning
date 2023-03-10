@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     pl.seed_everything(SEED, workers=True)
 
-    dataset = 'cub2002011'
+    dataset = 'cub'
     image_size = 256
     batch_size = 16
     train_folder = f'/media/dserez/datasets/{dataset}/train.beton'
