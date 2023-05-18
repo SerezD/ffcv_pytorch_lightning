@@ -74,13 +74,13 @@ You need to save your dataset in ffcv format (`.beton`).
 Official FFCV [docs](https://docs.ffcv.io/writing_datasets.html).
 
 This package provides you the `create_beton_wrapper` method, which allows to easily create
-a `.beton` dataset from a `torch` dataset. 
+a `.beton` dataset from a `torch` dataset.     
 An example is given in the `dataset_creation.py` script.
 
 ## Dataloader and Datamodule
 
 Merge the PL Datamodule with the FFCV Loader object.  
-Official FFCV Loader [docs](https://docs.ffcv.io/making_dataloaders.html).
+Official FFCV Loader [docs](https://docs.ffcv.io/making_dataloaders.html).   
 Official Pytorch-Lightning DataModule [docs](https://lightning.ai/docs/pytorch/stable/data/datamodule.html).
 
 In `main.py` a complete example on how to use the `FFCVDataModule` method and train a 
@@ -90,11 +90,11 @@ The main steps to follow are:
 1. get the `.beton` files for the Loaders that you need (train, val, test or predict). 
    The file must be created with the `create_beton_wrapper` method.
 2. get the corresponding `ffcv.Fields` types (same specified in the dataset creation method)
-3. Optionally define and `FFCVDecoders` object that defines the pipeline to apply. 
-   You are free to select different transforms for train/val/test/predict. 
+3. Optionally create the `FFCVDecoders` objects that defines the pipeline to apply.   
+   You are free to select different transforms for train/val/test/predict.   
    See the Official FFCV Loader docs for more information.
 4. call the `FFCVDataModule` method specifying the `.beton` files, the `FFCVDecoders`, the 
-   `ffcv.Fields` and any other option of the FFCV Loader. 
+   `ffcv.Fields` and any other option of the FFCV Loader.  
    Also, read FFCV [performance guide](https://docs.ffcv.io/performance_guide.html) to better
    understand which options fit your needs.
 5. Pass the data module to Pytorch Lightning, as you normally would!
