@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Serez"
+  given-names: "Dario"
+title: "FFCV Pytorch Lightning"
+version: 0.2.0
+date-released: 2023-05-18
+url: "https://github.com/SerezD/ffcv_pytorch_lightning"

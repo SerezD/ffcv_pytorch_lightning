@@ -3,10 +3,18 @@
 FFCV is a fast dataloader for neural networks training: https://github.com/libffcv/ffcv  
 
 In this repository, all the steps to install and configure it with pytorch-lightning are presented.  
-Moreover, some useful methods to quickly create, preprocess and load Datasets with *FFCV* and *pytorch-lightning* 
-are proposed.
+The idea is to provide very generic methods and utils, while letting the user decide and configure anything.
+
+Hint: read FFCV performance guide https://docs.ffcv.io/performance_guide.html
 
 ## Installation
+
+Tested with: 
+```
+ffcv==1.0.2
+pytorch==2.0.1
+pytorch-lightning==2.0.2
+```
 
 ### Dependencies
 
@@ -28,25 +36,25 @@ conda env create --file environment.yml
 This should correctly create a conda environment named `ffcv-pl`.  
 
 **If the above does not work**, then 
-you can try installing packages manually: 
+you can try installing packages manually (works with python 3.10): 
 
 1. create conda environment
     ```
-    conda create --name ffcv-pl
+    conda create --name ffcv-pl python=3.10
     conda activate ffcv-pl
     ```
 
-2. install pytorch according to [official website](https://pytorch.org/get-started/locally/)
+2. install pytorch according to [official website](https://pytorch.org/get-started/locally/) 
 
     ```
     # in my environment the command is the following 
-    conda install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia
+    conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
     ```
 
 3. install ffcv dependencies and pytorch-lightning
     ```
-    # can take a very long time, but should not create conflicts
-    conda install cupy pkg-config compilers libjpeg-turbo opencv numba pytorch-lightning -c pytorch -c conda-forge
+    # can take some time for solving, but should not create conflicts
+    conda install cupy pkg-config libjpeg-turbo opencv numba pytorch-lightning">=2.0.0" -c pytorch -c conda-forge
     ```
 
 4. install ffcv
@@ -56,7 +64,7 @@ you can try installing packages manually:
 
 ### Package
 
-Once dependencies are installed, it is safe to install package: 
+Once dependencies are installed, it is safe to install the package: 
 ```
 pip install ffcv_pl
 ```
@@ -66,109 +74,47 @@ pip install ffcv_pl
 You need to save your dataset in ffcv format (`.beton`).  
 Official FFCV [docs](https://docs.ffcv.io/writing_datasets.html).
 
-This package allows different types of Datasets, listed in the `dataset` subpackage.
-A quick example on how to create a dataset is provided in the `dataset_creation.py script`:
-
-```
-from ffcv_pl.ffcv_utils.generate_dataset import create_image_label_dataset
-
-if __name__ == '__main__':
-
-    # write dataset in ".beton" format
-    train_folder = '/media/dserez/datasets/cub/train/'
-    test_folder = '/media/dserez/datasets/cub/test/'
-    create_image_label_dataset(train_folder=train_folder, test_folder=test_folder)
-```
-
-For example, this code will create the files `/media/dserez/datasets/cub/test.beton` and 
-`/media/dserez/datasets/cub/train.beton`, 
-loading images from folders `/media/dserez/datasets/cub/test/` and 
-`/media/dserez/datasets/cub/train/`, respectively.
-
-Note that you can pass also more folders, all in one call. 
+This package provides you the `create_beton_wrapper` method, which allows to easily create
+a `.beton` dataset from a `torch` dataset. 
+An example is given in the `dataset_creation.py` script.
 
 ## Dataloader and Datamodule
 
 Merge the PL Datamodule with the FFCV Loader object.  
-It should be compatible with ddp/multiprocessing.  
-See `main.py` for a complete example.  
-Official FFCV [docs](https://docs.ffcv.io/making_dataloaders.html).
+Official FFCV Loader [docs](https://docs.ffcv.io/making_dataloaders.html).
+Official Pytorch-Lightning DataModule [docs](https://lightning.ai/docs/pytorch/stable/data/datamodule.html).
 
-```
-import pytorch_lightning as pl
-import torch
-from pytorch_lightning.strategies.ddp import DDPStrategy
+In `main.py` a complete example on how to use the `FFCVDataModule` method and train a 
+Lightning Model is given.
 
-from torch import nn
-from torch.optim import Adam
+The main steps to follow are:
+1. get the `.beton` files for the Loaders that you need (train, val, test or predict). 
+   The file must be created with the `create_beton_wrapper` method.
+2. get the corresponding `ffcv.Fields` types (same specified in the dataset creation method)
+3. Optionally define and `FFCVDecoders` object that defines the pipeline to apply. 
+   You are free to select different transforms for train/val/test/predict. 
+   See the Official FFCV Loader docs for more information.
+4. call the `FFCVDataModule` method specifying the `.beton` files, the `FFCVDecoders`, the 
+   `ffcv.Fields` and any other option of the FFCV Loader. 
+   Also, read FFCV [performance guide](https://docs.ffcv.io/performance_guide.html) to better
+   understand which options fit your needs. This package gives you the complete control here.
+5. Pass the data module to Pytorch Lightning, as you normally would!
 
-from ffcv_pl.datasets.image import ImageDataModule
+## Code Citations
 
-
-# define the LightningModule
-class LitAutoEncoder(pl.LightningModule):
-
-    def __init__(self):
-
-        super().__init__()
-        self.encoder = nn.Sequential(nn.Linear(256 * 256 * 3, 64), nn.ReLU(), nn.Linear(64, 3))
-        self.decoder = nn.Sequential(nn.Linear(3, 64), nn.ReLU(), nn.Linear(64, 256 * 256 * 3))
-
-    def training_step(self, batch, batch_idx):
-
-        x, y = batch
-
-        b, c, h, w = x.shape
-        x = x.reshape(b, -1)
-        z = self.encoder(x)
-        x_hat = self.decoder(z)
-        loss = nn.functional.mse_loss(x_hat, x)
-        # Logging to TensorBoard by default
-        self.log("train_loss", loss)
-        return loss
-
-    def configure_optimizers(self):
-        optimizer = Adam(self.parameters(), lr=1e-3)
-        return optimizer
-
-
-if __name__ == '__main__':
-
-    SEED = 1234
-
-    pl.seed_everything(SEED, workers=True)
-
-    dataset = 'cub'
-    image_size = 256
-    batch_size = 16
-    train_folder = f'/media/dserez/datasets/{dataset}/train.beton'
-    val_folder = f'/media/dserez/datasets/{dataset}/test.beton'
-
-    gpus = 2
-    workers = 8
-
-    # define model
-    model = LitAutoEncoder()
-
-    # trainer
-    trainer = pl.Trainer(strategy=DDPStrategy(find_unused_parameters=False), deterministic=True,
-                         accelerator='gpu', devices=gpus, num_nodes=1, max_epochs=5)
-
-    # Note: set is_dist True if you are using DDP and more than one GPU
-    data_module = ImageDataModule(train_folder, val_folder, val_folder, image_size, torch.float32, batch_size,
-                                  num_workers=1, is_dist=gpus > 1, seed=SEED)
-
-    trainer.fit(model, data_module)
-
-```
-
-Each `ffcv_pl.datasets.*` contains a couple of classes (Dataset, Dataloader).
-
-## Citations
-
-1. Pytorch-Lightning:  
-    Falcon, W., & The PyTorch Lightning team. (2019). PyTorch Lightning (Version 1.4) 
-    [Computer software]. https://doi.org/10.5281/zenodo.3828935
+1. Pytorch-Lightning:
+    ```
+   @software{Falcon_PyTorch_Lightning_2019,
+    author = {Falcon, William and {The PyTorch Lightning team}},
+    doi = {10.5281/zenodo.3828935},
+    license = {Apache-2.0},
+    month = mar,
+    title = {{PyTorch Lightning}},
+    url = {https://github.com/Lightning-AI/lightning},
+    version = {1.4},
+    year = {2019}
+    }
+   ```
 
 2. FFCV: 
     ```
@@ -177,6 +123,6 @@ Each `ffcv_pl.datasets.*` contains a couple of classes (Dataset, Dataloader).
         title = {{FFCV}: Accelerating Training by Removing Data Bottlenecks},
         year = {2022},
         howpublished = {\url{https://github.com/libffcv/ffcv/}},
-        note = {commit xxxxxxx}
+        note = {commit 2544abdcc9ce77db12fecfcf9135496c648a7cd5}
     }
     ```
