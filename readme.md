@@ -5,12 +5,11 @@ FFCV is a fast dataloader for neural networks training: https://github.com/libff
 In this repository, all the steps to install and configure it with pytorch-lightning are presented.  
 The idea is to provide very generic methods and utils, while letting the user decide and configure anything.
 
-Hint: read FFCV performance guide https://docs.ffcv.io/performance_guide.html
-
 ## Installation
 
 Tested with: 
 ```
+Ubuntu 22.04.2 LTS
 ffcv==1.0.2
 pytorch==2.0.1
 pytorch-lightning==2.0.2
@@ -97,7 +96,7 @@ The main steps to follow are:
 4. call the `FFCVDataModule` method specifying the `.beton` files, the `FFCVDecoders`, the 
    `ffcv.Fields` and any other option of the FFCV Loader. 
    Also, read FFCV [performance guide](https://docs.ffcv.io/performance_guide.html) to better
-   understand which options fit your needs. This package gives you the complete control here.
+   understand which options fit your needs.
 5. Pass the data module to Pytorch Lightning, as you normally would!
 
 ## Code Citations
