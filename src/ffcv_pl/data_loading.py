@@ -1,4 +1,5 @@
 import pytorch_lightning as pl
+from pytorch_lightning.trainer.trainer import TrainerFn
 from ffcv.fields import Field
 from ffcv.loader import Loader, OrderOption
 import warnings
@@ -106,7 +107,7 @@ class FFCVDataModule(pl.LightningDataModule):
 
         pipeline = {}
 
-        if stage == 'fit':
+        if stage == 'fit' or stage == TrainerFn.FITTING:
 
             self.train_pipeline = {}
             self.val_pipeline = {}
@@ -142,32 +143,7 @@ class FFCVDataModule(pl.LightningDataModule):
                 if v_value is not None:
                     self.val_pipeline[f'{f}_{i}'] = v_value
 
-        elif stage == 'train':
-
-            for i, f in enumerate(self.fields):
-                if f == 'image':
-                    value = self.train_decoders.image_transforms
-                elif f == 'bytes':
-                    value = self.train_decoders.bytes_transforms
-                elif f == 'int':
-                    value = self.train_decoders.int_transforms
-                elif f == 'float':
-                    value = self.train_decoders.float_transforms
-                elif f == 'array':
-                    value = self.train_decoders.array_transforms
-                elif f == 'json':
-                    value = self.train_decoders.json_transforms
-                elif f == 'tensor':
-                    value = self.train_decoders.tensor_transforms
-                else:
-                    value = None
-
-                if value is not None:
-                    pipeline[f'{f}_{i}'] = value
-
-            self.train_pipeline = pipeline
-
-        elif stage == 'validate':
+        elif stage == 'validate' or stage == TrainerFn.VALIDATING:
 
             for i, f in enumerate(self.fields):
                 if f == 'image':
@@ -192,7 +168,7 @@ class FFCVDataModule(pl.LightningDataModule):
 
             self.val_pipeline = pipeline
 
-        elif stage == 'test':
+        elif stage == 'test' or stage == TrainerFn.TESTING:
 
             for i, f in enumerate(self.fields):
                 if f == 'image':
@@ -217,7 +193,7 @@ class FFCVDataModule(pl.LightningDataModule):
 
             self.test_pipeline = pipeline
 
-        elif stage == 'predict':
+        elif stage == 'predict' or stage == TrainerFn.PREDICTING:
 
             for i, f in enumerate(self.fields):
                 if f == 'image':
