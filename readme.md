@@ -34,6 +34,9 @@ conda env create --file environment.yml
 ```
 This should correctly create a conda environment named `ffcv-pl`.  
 
+**Note:** Solving environment can take quite a long time. I suggest to use [libmamba solver](https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community) 
+to speed up the process.
+
 **If the above does not work**, then 
 you can try installing packages manually (works with python 3.10): 
 

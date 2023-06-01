@@ -142,6 +142,31 @@ class FFCVDataModule(pl.LightningDataModule):
                 if v_value is not None:
                     self.val_pipeline[f'{f}_{i}'] = v_value
 
+        elif stage == 'train':
+
+            for i, f in enumerate(self.fields):
+                if f == 'image':
+                    value = self.train_decoders.image_transforms
+                elif f == 'bytes':
+                    value = self.train_decoders.bytes_transforms
+                elif f == 'int':
+                    value = self.train_decoders.int_transforms
+                elif f == 'float':
+                    value = self.train_decoders.float_transforms
+                elif f == 'array':
+                    value = self.train_decoders.array_transforms
+                elif f == 'json':
+                    value = self.train_decoders.json_transforms
+                elif f == 'tensor':
+                    value = self.train_decoders.tensor_transforms
+                else:
+                    value = None
+
+                if value is not None:
+                    pipeline[f'{f}_{i}'] = value
+
+            self.train_pipeline = pipeline
+
         elif stage == 'validate':
 
             for i, f in enumerate(self.fields):
