@@ -18,19 +18,7 @@ pytorch-lightning==2.0.4
 
 ### Dependencies
 
-Some suggestions for the installation process, since you may encounter some issues with the FFCV package.  
-
-In particular, even a successful installation may rise the following error when 
-trying to import `ffcv` (this seems to happen also in version `1.0.x` of FFCV):
-
-```ImportError: libopencv_imgproc.so.405: cannot open shared object file: No such file or directory```
-
-There is a Closed issue about this [#136](https://github.com/libffcv/ffcv/issues/136).
-
-In order to correctly install everything, I suggest to **use Conda**
-(I tried also pip but encountered the error above).
-
-First, try to install dependencies with `environment.yml` file:  
+You can install dependencies (FFCV, Pytorch) with the provided `environment.yml` file:  
 ```
 conda env create --file environment.yml
 conda activate ffcv-pl
@@ -69,7 +57,7 @@ to speed up the process.
     pip install ffcv
     ```
 
-**Windows users**: check out [ffcv official page](https://github.com/libffcv/ffcv) for installation guidelines 
+For further help, check out FFCV installation guidelines: [ffcv official page](https://github.com/libffcv/ffcv)
 
 ### Package
 
