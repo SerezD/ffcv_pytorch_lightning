@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from ffcv.fields.basics import IntDecoder
+from ffcv.fields.basics import IntDecoder, IntField
 from ffcv.fields.bytes import BytesDecoder
 from ffcv.fields.ndarray import NDArrayDecoder
 from ffcv.loader import OrderOption
@@ -13,7 +13,7 @@ import numpy as np
 import torch
 from PIL import Image
 import pytorch_lightning as pl
-from ffcv.fields.rgb_image import RandomResizedCropRGBImageDecoder, CenterCropRGBImageDecoder
+from ffcv.fields.rgb_image import RandomResizedCropRGBImageDecoder, CenterCropRGBImageDecoder, RGBImageField
 from ffcv.transforms import ToTensor, ToTorchImage
 from pytorch_lightning.strategies.ddp import DDPStrategy
 
@@ -142,6 +142,18 @@ if __name__ == '__main__':
     except AttributeError as e:
         print(f'Test passed: {e}')
 
+    # 2.1 check fields optional argument
+    image_field = RGBImageField(write_mode='jpg', max_resolution=32)
+    int_field = IntField()
+
+    try:
+        create_beton_wrapper(image_label_dataset, "./data/image_label.beton", fields=(image_field, ))
+    except AttributeError as e:
+        print(f'Test passed: {e}')
+
+    create_beton_wrapper(image_label_dataset, "./data/image_label.beton", fields=(image_field, None))
+    create_beton_wrapper(image_label_dataset, "./data/image_label.beton", fields=(image_field, int_field))
+
     # 3. define params
     SEED = 1234
 
@@ -197,8 +209,10 @@ if __name__ == '__main__':
                                           None
                                       ])
 
+    # try Loader kwargs
     data_module = FFCVDataModule(batch_size, workers, train_manager=train_manager, val_manager=val_manager,
-                                 is_dist=True, seed=SEED)
+                                 is_dist=True, seed=SEED, train_drop_last=False, val_batches_ahead=5,
+                                 not_exists_test=True)
 
     # define model
     model = LitAutoEncoder()
