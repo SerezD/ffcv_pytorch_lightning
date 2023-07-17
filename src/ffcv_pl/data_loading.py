@@ -7,7 +7,7 @@ class FFCVDataModule(pl.LightningDataModule):
 
     def __init__(self, batch_size: int, num_workers: int, is_dist: bool, train_manager: FFCVPipelineManager = None,
                  val_manager: FFCVPipelineManager = None, test_manager: FFCVPipelineManager = None,
-                 predict_manager: FFCVPipelineManager = None, os_cache: bool = True, seed: int = None,
+                 predict_manager: FFCVPipelineManager = None, os_cache: bool = True, seed: int = None, **kwargs
                  ) -> None:
         """
         Define PL DataModule (https://lightning.ai/docs/pytorch/stable/data/datamodule.html) object using
@@ -22,6 +22,9 @@ class FFCVDataModule(pl.LightningDataModule):
         :param os_cache: option for the ffcv loader, depending on your dataset.
                         Read official docs: https://docs.ffcv.io/parameter_tuning.html
         :param seed: fix data loading process to ensure reproducibility
+        :param kwargs: pass any extra argument of the FFCV Loader object using the format "type_pname", where type is
+        one of {train, val, test, predict} and type is one of {indices, custom_fields, drop_last, batches_ahead,
+        recompile}. Check out https://docs.ffcv.io/making_dataloaders.html for more information about the parameters.
         """
 
         # initial condition must be satisfied
@@ -36,6 +39,8 @@ class FFCVDataModule(pl.LightningDataModule):
         self.os_cache = os_cache
 
         self.is_dist = is_dist
+
+        self.kwargs = kwargs
 
         self.train_manager = train_manager
         self.val_manager = val_manager
@@ -62,7 +67,15 @@ class FFCVDataModule(pl.LightningDataModule):
                           order=self.train_manager.ordering,
                           pipelines=self.train_manager.pipeline,
                           distributed=self.is_dist,
-                          seed=self.seed)
+                          seed=self.seed,
+                          indices=self.kwargs['train_indices'] if 'train_indices' in self.kwargs.keys() else None,
+                          custom_fields=self.kwargs['train_custom_fields'] if
+                          'train_custom_fields' in self.kwargs.keys() else {},
+                          drop_last=self.kwargs['train_drop_last'] if 'train_drop_last' in self.kwargs.keys() else True,
+                          batches_ahead=self.kwargs['train_batches_ahead'] if
+                          'train_batches_ahead' in self.kwargs.keys() else 3,
+                          recompile=self.kwargs['train_recompile'] if
+                          'train_recompile' in self.kwargs.keys() else False)
 
     def val_dataloader(self):
         if self.val_manager is not None:
@@ -73,7 +86,14 @@ class FFCVDataModule(pl.LightningDataModule):
                           order=self.val_manager.ordering,
                           pipelines=self.val_manager.pipeline,
                           distributed=self.is_dist,
-                          seed=self.seed)
+                          seed=self.seed,
+                          indices=self.kwargs['val_indices'] if 'val_indices' in self.kwargs.keys() else None,
+                          custom_fields=self.kwargs['val_custom_fields'] if
+                          'val_custom_fields' in self.kwargs.keys() else {},
+                          drop_last=self.kwargs['val_drop_last'] if 'val_drop_last' in self.kwargs.keys() else True,
+                          batches_ahead=self.kwargs['val_batches_ahead'] if
+                          'val_batches_ahead' in self.kwargs.keys() else 3,
+                          recompile=self.kwargs['val_recompile'] if 'val_recompile' in self.kwargs.keys() else False)
 
     def test_dataloader(self):
         if self.test_manager is not None:
@@ -84,7 +104,14 @@ class FFCVDataModule(pl.LightningDataModule):
                           order=self.test_manager.ordering,
                           pipelines=self.test_manager.pipeline,
                           distributed=self.is_dist,
-                          seed=self.seed)
+                          seed=self.seed,
+                          indices=self.kwargs['test_indices'] if 'test_indices' in self.kwargs.keys() else None,
+                          custom_fields=self.kwargs['test_custom_fields'] if
+                          'test_custom_fields' in self.kwargs.keys() else {},
+                          drop_last=self.kwargs['test_drop_last'] if 'test_drop_last' in self.kwargs.keys() else True,
+                          batches_ahead=self.kwargs['test_batches_ahead'] if
+                          'test_batches_ahead' in self.kwargs.keys() else 3,
+                          recompile=self.kwargs['test_recompile'] if 'test_recompile' in self.kwargs.keys() else False)
 
     def predict_dataloader(self):
         if self.predict_manager is not None:
@@ -95,4 +122,13 @@ class FFCVDataModule(pl.LightningDataModule):
                           order=self.predict_manager.ordering,
                           pipelines=self.predict_manager.pipeline,
                           distributed=self.is_dist,
-                          seed=self.seed)
+                          seed=self.seed,
+                          indices=self.kwargs['predict_indices'] if 'predict_indices' in self.kwargs.keys() else None,
+                          custom_fields=self.kwargs['predict_custom_fields'] if
+                          'predict_custom_fields' in self.kwargs.keys() else {},
+                          drop_last=self.kwargs['predict_drop_last'] if
+                          'predict_drop_last' in self.kwargs.keys() else True,
+                          batches_ahead=self.kwargs['predict_batches_ahead'] if
+                          'predict_batches_ahead' in self.kwargs.keys() else 3,
+                          recompile=self.kwargs['predict_recompile'] if
+                          'predict_recompile' in self.kwargs.keys() else False)

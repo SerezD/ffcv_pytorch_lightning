@@ -77,6 +77,8 @@ a `.beton` dataset from a `torch` dataset.
 Example from the `dataset_creation.py` script:
 
 ```
+from ffcv.fields import RGBImageField
+
 from ffcv_pl.generate_dataset import create_beton_wrapper
 from torch.utils.data.dataset import Dataset
 import numpy as np
@@ -97,18 +99,23 @@ class ToyImageLabelDataset(Dataset):
 
 
 def main():
-    
+
     # 1. Instantiate the torch dataset that you want to create
     # Important: the __get_item__ dataset must return tuples! (This depends on FFCV library)
     image_label_dataset = ToyImageLabelDataset(n_samples=256)
-
-    # 2. call the method, and it will automatically create the .beton dataset for you.
-    create_beton_wrapper(image_label_dataset, "./data/image_label.beton")
-
     
+    # 2. Optional: create Field objects.
+    # here overwrites only RGBImageField, leave default IntField.
+    fields = (RGBImageField(write_mode='jpg', max_resolution=32), None)
+    
+    # 3. call the method, and it will automatically create the .beton dataset for you.
+    create_beton_wrapper(image_label_dataset, "./data/image_label.beton", fields)
+
+
 if __name__ == '__main__':
-    
+
     main()
+
 ```
 
 ## Dataloader and Datamodule

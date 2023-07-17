@@ -24,7 +24,7 @@ def field_to_str(f: Field) -> str:
 def obj_to_field(obj: Any) -> Field:
 
     if isinstance(obj, Image):
-        return RGBImageField()
+        return RGBImageField(write_mode="jpg")
 
     elif isinstance(obj, int):
         return IntField()
